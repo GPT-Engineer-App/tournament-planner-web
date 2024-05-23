@@ -1,0 +1,165 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(TournamentPlannerApp());
+}
+
+class TournamentPlannerApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Tournament Planner',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: AdminScreen(),
+    );
+  }
+}
+
+class AdminScreen extends StatefulWidget {
+  @override
+  _AdminScreenState createState() => _AdminScreenState();
+}
+
+class _AdminScreenState extends State<AdminScreen> {
+  final TextEditingController _teamController = TextEditingController();
+  final List<String> _teams = [];
+  int _groupSize = 2;
+  String _tournamentMode = 'Single Elimination';
+
+  void _addTeam() {
+    if (_teamController.text.isNotEmpty) {
+      setState(() {
+        _teams.add(_teamController.text);
+        _teamController.clear();
+      });
+    }
+  }
+
+  void _removeTeam(String team) {
+    setState(() {
+      _teams.remove(team);
+    });
+  }
+
+  void _updateGroupSize(int size) {
+    setState(() {
+      _groupSize = size;
+    });
+  }
+
+  void _updateTournamentMode(String mode) {
+    setState(() {
+      _tournamentMode = mode;
+    });
+  }
+
+  void _startTournament() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => PublicScreen(teams: _teams, groupSize: _groupSize, tournamentMode: _tournamentMode)),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Admin - Setup Tournament'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _teamController,
+              decoration: InputDecoration(labelText: 'Team Name'),
+            ),
+            SizedBox(height: 8),
+            ElevatedButton(onPressed: _addTeam, child: Text('Add Team')),
+            SizedBox(height: 16),
+            Text('Teams:'),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _teams.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(_teams[index]),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete),
+                      onPressed: () => _removeTeam(_teams[index]),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(height: 16),
+            DropdownButton<int>(
+              value: _groupSize,
+              onChanged: _updateGroupSize,
+              items: [2, 4, 8, 16].map((size) {
+                return DropdownMenuItem<int>(
+                  value: size,
+                  child: Text('Group Size: $size'),
+                );
+              }).toList(),
+            ),
+            SizedBox(height: 16),
+            DropdownButton<String>(
+              value: _tournamentMode,
+              onChanged: _updateTournamentMode,
+              items: ['Single Elimination', 'Double Elimination', 'Round Robin'].map((mode) {
+                return DropdownMenuItem<String>(
+                  value: mode,
+                  child: Text('Tournament Mode: $mode'),
+                );
+              }).toList(),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(onPressed: _startTournament, child: Text('Start Tournament')),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class PublicScreen extends StatelessWidget {
+  final List<String> teams;
+  final int groupSize;
+  final String tournamentMode;
+
+  PublicScreen({required this.teams, required this.groupSize, required this.tournamentMode});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Public - Tournament Status'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Text('Tournament Mode: $tournamentMode'),
+            SizedBox(height: 16),
+            Text('Group Size: $groupSize'),
+            SizedBox(height: 16),
+            Text('Teams:'),
+            Expanded(
+              child: ListView.builder(
+                itemCount: teams.length,
+                itemBuilder: (context, index) {
+                  return ListTile(
+                    title: Text(teams[index]),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
